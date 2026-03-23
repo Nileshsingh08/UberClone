@@ -10,3 +10,7 @@ module.exports.createUser = async ({ firstname, lastname, email, password }) => 
     await newUser.save();
     return newUser;
 }
+
+module.exports.findUserByEmail = async (email) => {
+    return await userModel.findOne({ email }).select('+password');
+};
