@@ -256,3 +256,242 @@ OR
 - Email must be registered in the system
 - Password comparison is case-sensitive
 - Token can be used for authenticated requests
+
+---
+
+### 3. Get User Profile
+
+#### Endpoint: `GET /users/profile`
+
+#### Description
+
+This endpoint retrieves the authenticated user's profile information. It requires a valid JWT authentication token and returns the user's details excluding the password field for security.
+
+---
+
+#### Authentication
+
+This is a **protected endpoint**. You must provide a valid JWT token in one of the following ways:
+
+1. **Cookie**: `token=your_jwt_token_here`
+2. **Authorization Header**: `Bearer your_jwt_token_here`
+
+---
+
+#### Request Headers
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+OR use cookies:
+
+```
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+#### Request Example
+
+```bash
+curl -X GET http://localhost:4000/users/profile \
+  -H "Authorization: Bearer jwt_token_here"
+```
+
+---
+
+#### Response Status Codes
+
+| Status Code | Description                             |
+| ----------- | --------------------------------------- |
+| **200**     | Profile retrieved successfully          |
+| **401**     | Unauthorized (missing or invalid token) |
+| **500**     | Server error                            |
+
+---
+
+#### Success Response (200)
+
+```json
+{
+  "user": {
+    "_id": "user_id",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john@example.com",
+    "socketid": null
+  }
+}
+```
+
+---
+
+#### Unauthorized Response (401)
+
+```json
+{
+  "message": "No token provided"
+}
+```
+
+OR
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+OR
+
+```json
+{
+  "message": "User not found"
+}
+```
+
+OR
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+#### Server Error Response (500)
+
+```json
+{
+  "message": "Error message describing what went wrong"
+}
+```
+
+---
+
+#### Notes
+
+- The password field is never returned for security reasons
+- Token must be valid and not expired (24-hour expiration)
+- Token must not be blacklisted (from logout)
+- This endpoint requires the user to be authenticated
+
+---
+
+### 4. User Logout
+
+#### Endpoint: `GET /users/logout`
+
+#### Description
+
+This endpoint logs out the authenticated user by blacklisting their JWT token and clearing the authentication cookie. After logout, the token can no longer be used for authenticated requests.
+
+---
+
+#### Authentication
+
+This is a **protected endpoint**. You must provide a valid JWT token in one of the following ways:
+
+1. **Cookie**: `token=your_jwt_token_here`
+2. **Authorization Header**: `Bearer your_jwt_token_here`
+
+---
+
+#### Request Headers
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+OR use cookies:
+
+```
+Cookie: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+#### Request Example
+
+```bash
+curl -X GET http://localhost:4000/users/logout \
+  -H "Authorization: Bearer jwt_token_here"
+```
+
+---
+
+#### Response Status Codes
+
+| Status Code | Description                             |
+| ----------- | --------------------------------------- |
+| **200**     | Logout successful                       |
+| **401**     | Unauthorized (missing or invalid token) |
+| **500**     | Server error                            |
+
+---
+
+#### Success Response (200)
+
+```json
+{
+  "message": "Logout successful"
+}
+```
+
+---
+
+#### Unauthorized Response (401)
+
+```json
+{
+  "message": "No token provided"
+}
+```
+
+OR
+
+```json
+{
+  "message": "Invalid token"
+}
+```
+
+OR
+
+```json
+{
+  "message": "User not found"
+}
+```
+
+OR
+
+```json
+{
+  "message": "Unauthorized"
+}
+```
+
+---
+
+#### Server Error Response (500)
+
+```json
+{
+  "message": "Error message describing what went wrong"
+}
+```
+
+---
+
+#### Notes
+
+- The token is added to the blacklist with a 24-hour TTL (Time To Live)
+- The authentication cookie is cleared from the client
+- After logout, the token will be rejected for all authenticated requests
+- Blacklisted tokens are automatically removed from the database after 24 hours
+- Users can log out from multiple devices by calling this endpoint with each active token
