@@ -495,3 +495,171 @@ OR
 - After logout, the token will be rejected for all authenticated requests
 - Blacklisted tokens are automatically removed from the database after 24 hours
 - Users can log out from multiple devices by calling this endpoint with each active token
+
+---
+
+### 5. Captain Registration
+
+#### Endpoint: `POST /captains/register`
+
+#### Description
+
+This endpoint allows new captains to register for the UberClone application. It validates the input data, hashes the password, and stores the captain with vehicle information in the database. Upon successful registration, it returns an authentication token.
+
+---
+
+#### Request Body
+
+The request must include the following JSON data:
+
+```json
+{
+  "fullName": {
+    "FirstName": "string (required, minimum 3 characters)",
+    "LastName": "string (optional)"
+  },
+  "email": "string (required, must be valid email format)",
+  "password": "string (required, minimum 6 characters)",
+  "vehicle": {
+    "color": "string (required, minimum 3 characters)",
+    "plate": "string (required, must be unique)",
+    "capacity": "number (required, minimum 1)",
+    "vehicleType": "string (required, must be: 'car', 'bike', or 'auto')"
+  },
+  "location": {
+    "lat": "number (optional)",
+    "long": "number (optional)"
+  }
+}
+```
+
+#### Request Example
+
+```bash
+curl -X POST http://localhost:4000/captains/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "fullName": {
+      "FirstName": "Raj",
+      "LastName": "Kumar"
+    },
+    "email": "raj.kumar@uber.com",
+    "password": "password123",
+    "vehicle": {
+      "color": "Black",
+      "plate": "DL01AB1234",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "location": {
+      "lat": 28.7041,
+      "long": 77.1025
+    }
+  }'
+```
+
+---
+
+#### Response Status Codes
+
+| Status Code | Description                                  |
+| ----------- | -------------------------------------------- |
+| **201**     | Captain registered successfully              |
+| **400**     | Validation error (missing or invalid fields) |
+| **500**     | Server error                                 |
+
+---
+
+#### Success Response (201)
+
+```json
+{
+  "message": "Captain registered successfully",
+  "captain": {
+    "_id": "captain_id",
+    "fullName": {
+      "FirstName": "Raj",
+      "LastName": "Kumar"
+    },
+    "email": "raj.kumar@uber.com",
+    "socketid": null,
+    "status": "inactive",
+    "vehicle": {
+      "color": "Black",
+      "plate": "DL01AB1234",
+      "capacity": 4,
+      "vehicleType": "car"
+    },
+    "location": {
+      "lat": 28.7041,
+      "long": 77.1025
+    }
+  },
+  "token": "jwt_token_here"
+}
+```
+
+---
+
+#### Validation Error Response (400)
+
+```json
+{
+  "error": "Captain with this email already exists"
+}
+```
+
+OR
+
+```json
+{
+  "error": "All fields are required"
+}
+```
+
+OR
+
+```json
+{
+  "error": "Captain with this plate already exists"
+}
+```
+
+---
+
+#### Server Error Response (500)
+
+```json
+{
+  "error": "Error message describing what went wrong"
+}
+```
+
+---
+
+#### Field Validation Rules
+
+| Field                 | Type   | Required | Validation                         |
+| --------------------- | ------ | -------- | ---------------------------------- |
+| `fullName.FirstName`  | String | Yes      | Minimum 3 characters               |
+| `fullName.LastName`   | String | No       | None                               |
+| `email`               | String | Yes      | Valid email format, must be unique |
+| `password`            | String | Yes      | Minimum 6 characters               |
+| `vehicle.color`       | String | Yes      | Minimum 3 characters               |
+| `vehicle.plate`       | String | Yes      | Must be unique                     |
+| `vehicle.capacity`    | Number | Yes      | Minimum 1                          |
+| `vehicle.vehicleType` | String | Yes      | Must be 'car', 'bike', or 'auto'   |
+| `location.lat`        | Number | No       | Valid latitude coordinate          |
+| `location.long`       | Number | No       | Valid longitude coordinate         |
+
+---
+
+#### Notes
+
+- Passwords are hashed using bcrypt before storage
+- Email addresses must be unique in the database
+- Vehicle plate numbers must be unique across all captains
+- A JWT authentication token is returned upon successful registration
+- The status field defaults to 'inactive' on registration
+- All fields are case-sensitive
+- Location coordinates are optional and can be updated later
