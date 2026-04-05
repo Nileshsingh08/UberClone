@@ -1,19 +1,39 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import axios from 'axios'
+import {UserDataContext} from '../context/UserContext'
 
 
 
 function UserSignup() {
-const [userData, setUserData] = useState({});
-const [firstName, setFirstName] = useState('');
-const [lastName, setLastName] = useState('');
+const navigate = useNavigate();
+const [firstname, setFirstName] = useState('');
+const [lastname, setLastName] = useState('');
 const [email, setEmail] = useState('');
 const [password, setPassword] = useState('');
+const {user,setUser} = React.useContext(UserDataContext);
 
-const submitHandler = (e) => {
+const submitHandler = async(e) => {
   e.preventDefault();
-  setUserData({ firstName, lastName, email, password });
+  const newUser = {
+    fullname:{
+      firstname,
+      lastname
+    },
+    email,
+    password
+  }
+
+  const response = await axios.post(`${import.meta.env.VITE_BASE_URL}users/register`, newUser);
+  console.log(response.data);
+  if(response.status === 201){
+    setUser(response.data);
+    localStorage.setItem('token', response.data.token);
+    navigate('/Home');
+  }else{ 
+    alert('Error occurred while registering user');
+  }
   console.log(firstName, lastName, email, password);
   setFirstName('');
   setLastName('');
@@ -34,7 +54,7 @@ const submitHandler = (e) => {
         className='bg-gray-100 rounded text-base mb-5 px-4 py-2 border w-1/2  text-base placeholder:text-sm'
          required 
         type="text"
-         value={firstName}
+         value={firstname}
          placeholder='First Name'
          onChange={(e)=>setFirstName(e.target.value)}
           />
@@ -42,7 +62,7 @@ const submitHandler = (e) => {
         className='bg-gray-100 text-base rounded mb-5 px-4 py-2 border w-1/2  text-base placeholder:text-sm'
          required 
         type="text"
-         value={lastName}
+         value={lastname}
          placeholder='Last Name'
          onChange={(e)=>setLastName(e.target.value)}
           />
@@ -66,7 +86,7 @@ const submitHandler = (e) => {
          placeholder='Password' />
         <button className='bg-[#111] text-white py-2 px-4 mb-4 rounded w-full hover:bg-black'>Signup</button>
 
-        <p>Already have account? <Link to="/login" className='text-blue-500 hover:underline text-center'>Create New Account</Link></p>
+        <p>Already have account? <Link to="/login" className='text-blue-500 hover:underline text-center'>Login</Link></p>
 
       </form>
       </div>
