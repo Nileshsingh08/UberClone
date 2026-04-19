@@ -1,7 +1,7 @@
 import React from "react";
 
 const CaptainHome = () => {
-  return <div></div>;
+  return <div>Home hai captain ka</div>;
 };
 
 export default CaptainHome;
